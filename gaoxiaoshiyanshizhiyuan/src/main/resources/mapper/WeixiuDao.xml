@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.WeixiuDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.youxing_id as youxingId
+        ,a.jieyong_time as jieyongTime
+        ,a.youxing_money as youxingMoney
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.WeixiuView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,youxing.youxing_bianhao as youxingBianhao
+        ,youxing.youxing_name as youxingName
+        ,youxing.youxing_types as youxingTypes
+        ,youxing.zhuangtai_types as zhuangtaiTypes
+        ,youxing.youxing_money as youxingMoney
+        ,youxing.youxing_content as youxingContent
+        ,youxing.insert_time as insertTime
+
+        FROM weixiu  a
+        left JOIN youxing youxing ON a.youxing_id = youxing.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.youxingId != null">
+                and a.youxing_id = #{params.youxingId}
+            </if>
+            <if test=" params.jieyongTimeStart != '' and params.jieyongTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.jieyong_time) >= UNIX_TIMESTAMP(#{params.jieyongTimeStart}) ]]>
+            </if>
+            <if test=" params.jieyongTimeEnd != '' and params.jieyongTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.jieyong_time) <= UNIX_TIMESTAMP(#{params.jieyongTimeEnd}) ]]>
+            </if>
+            <if test="params.youxingMoneyStart != null ">
+                <![CDATA[  and a.youxing_money >= #{params.youxingMoneyStart}   ]]>
+            </if>
+            <if test="params.youxingMoneyEnd != null ">
+                <![CDATA[  and a.youxing_money <= #{params.youxingMoneyEnd}   ]]>
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+            <if test=" params.youxingBianhao != '' and params.youxingBianhao != null and params.youxingBianhao != 'null' ">
+                and youxing.youxing_bianhao like CONCAT('%',#{params.youxingBianhao},'%')
+            </if>
+            <if test=" params.youxingName != '' and params.youxingName != null and params.youxingName != 'null' ">
+                and youxing.youxing_name like CONCAT('%',#{params.youxingName},'%')
+            </if>
+            <if test="params.youxingTypes != null">
+                and youxing.youxing_types = #{params.youxingTypes}
+            </if>
+
+            <if test="params.zhuangtaiTypes != null">
+                and youxing.zhuangtai_types = #{params.zhuangtaiTypes}
+            </if>
+
+            <if test="params.youxingMoneyStart != null ">
+                <![CDATA[  and youxing.youxing_money >= #{params.youxingMoneyStart}   ]]>
+            </if>
+            <if test="params.youxingMoneyEnd != null ">
+                <![CDATA[  and youxing.youxing_money <= #{params.youxingMoneyEnd}   ]]>
+            </if>
+            <if test=" params.youxingContent != '' and params.youxingContent != null and params.youxingContent != 'null' ">
+                and youxing.youxing_content like CONCAT('%',#{params.youxingContent},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(youxing.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(youxing.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+        </where>
+        order by a.${params.orderBy} desc
+    </select>
+
+</mapper>
